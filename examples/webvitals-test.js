@@ -16,6 +16,7 @@ export default async function () {
         url: window.location.href,
       }
       console.log('xk6-browser.web.vital.metric=' + JSON.stringify(m))
+      window.testbinding(JSON.stringify(m))
     }
 
     async function load() {
@@ -34,19 +35,38 @@ export default async function () {
 
     load();
   }`);
-  const page = context.newPage();
 
   try {
-    await page.goto('https://grafana.com', { waitUntil: 'networkidle' })
+    runTest2(context)
+    
+    var page = context.newPage(); // AddBinding
+    var page2 = context.newPage(); // AddBinding
+    await runTest(page, 'https://grafana.com', 'https://play.grafana.org/', 'grafana_screenshot.png')
+    page.close() // RemoveBinding -- only affects the session it's in
+    await runTest(page2, 'https://k6.io', '/jobs/', 'k6_screenshot.png')
+    page2.close() // RemoveBinding
+  } finally {
+    browser.close();
+  }
+}
+
+async function runTest2(context) {
+  const page = context.newPage();
+  page.close();
+  console.log("runTest2 done");
+}
+
+async function runTest(page, url, clickHref, screenshotFile) {
+  try{
+    await page.goto(url, { waitUntil: 'networkidle' })
 
     await Promise.all([
       page.waitForNavigation({ waitUntil: 'networkidle' }),
-      page.locator('a[href="https://play.grafana.org/"]').click(),
+      page.locator('a[href="' + clickHref + '"]').click(),
     ]);
 
-    page.screenshot({ path: 'screenshot.png' });
+    page.screenshot({ path: screenshotFile });
   } finally {
-    page.close();
-    browser.close();
+    console.log("runTest done");
   }
 }

@@ -263,10 +263,16 @@ func (fs *FrameSession) initEvents() {
 					fs.onDetachedFromTarget(ev)
 				case *cdppage.EventJavascriptDialogOpening:
 					fs.onEventJavascriptDialogOpening(ev)
+				case *cdpruntime.EventBindingCalled:
+					fs.onEventBindingCalled(ev)
 				}
 			}
 		}
 	}()
+}
+
+func (fs *FrameSession) onEventBindingCalled(event *cdpruntime.EventBindingCalled) {
+	fs.logger.Infof("FrameSessions:onEventBindingCalled", "%s", event.Payload)
 }
 
 func (fs *FrameSession) onEventJavascriptDialogOpening(event *cdppage.EventJavascriptDialogOpening) {
@@ -473,6 +479,7 @@ func (fs *FrameSession) initRendererEvents() {
 		cdproto.EventRuntimeExecutionContextsCleared,
 		cdproto.EventTargetAttachedToTarget,
 		cdproto.EventTargetDetachedFromTarget,
+		cdproto.EventRuntimeBindingCalled,
 	}
 	fs.session.on(fs.ctx, events, fs.eventCh)
 }

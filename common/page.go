@@ -19,6 +19,7 @@ import (
 	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/cdproto/page"
 	cdppage "github.com/chromedp/cdproto/page"
+	"github.com/chromedp/cdproto/runtime"
 	"github.com/chromedp/cdproto/target"
 	"github.com/dop251/goja"
 )
@@ -133,6 +134,11 @@ func NewPage(
 	action := target.SetAutoAttach(true, true).WithFlatten(true)
 	if err := action.Do(cdp.WithExecutor(p.ctx, p.session)); err != nil {
 		return nil, fmt.Errorf("internal error while auto attaching to browser pages: %w", err)
+	}
+
+	add := runtime.AddBinding("testbinding")
+	if err := add.Do(cdp.WithExecutor(p.ctx, p.session)); err != nil {
+		return nil, fmt.Errorf("internal error while adding binding to page: %w", err)
 	}
 
 	return &p, nil
@@ -412,6 +418,11 @@ func (p *Page) Click(selector string, opts goja.Value) error {
 // Close closes the page.
 func (p *Page) Close(opts goja.Value) error {
 	p.logger.Debugf("Page:Close", "sid:%v", p.sessionID())
+
+	add := runtime.RemoveBinding("testbinding")
+	if err := add.Do(cdp.WithExecutor(p.ctx, p.session)); err != nil {
+		return fmt.Errorf("internal error while removing binding from page: %w", err)
+	}
 
 	action := target.CloseTarget(p.targetID)
 	err := action.Do(cdp.WithExecutor(p.ctx, p.session))
