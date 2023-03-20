@@ -1,7 +1,6 @@
 package common
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -272,7 +271,15 @@ func (fs *FrameSession) initEvents() {
 }
 
 func (fs *FrameSession) onEventBindingCalled(event *cdpruntime.EventBindingCalled) {
-	fs.logger.Infof("FrameSessions:onEventBindingCalled", "%s", event.Payload)
+	fs.logger.Debugf("FrameSessions:onEventBindingCalled",
+		"sid:%v tid:%v name:%s payload:%s",
+		fs.session.ID(), fs.targetID, event.Name, event.Payload)
+
+	err := fs.parseAndRecordWebVitalMetric(event.Payload)
+	if err != nil {
+		fs.logger.Errorf("FrameSession:onEventBindingCalled", "failed to record web vital metric: %v", err)
+		return
+	}
 }
 
 func (fs *FrameSession) onEventJavascriptDialogOpening(event *cdppage.EventJavascriptDialogOpening) {
@@ -539,15 +546,6 @@ func (fs *FrameSession) onConsoleAPICalled(event *cdpruntime.EventConsoleAPICall
 			handleParseRemoteObjectErr(fs.ctx, err, l)
 		}
 		parsedObjects = append(parsedObjects, i)
-
-		dontPrint, err := fs.parseAndRecordWebVitalMetric(robj)
-		if err != nil {
-			fs.logger.Errorf("FrameSession:onConsoleAPICalled", "%v", err)
-			return
-		}
-		if dontPrint {
-			return
-		}
 	}
 
 	l = l.WithField("objects", parsedObjects)
@@ -575,24 +573,11 @@ type WebVitalMetric struct {
 	URL            string
 }
 
-func (fs *FrameSession) parseAndRecordWebVitalMetric(robj *cdpruntime.RemoteObject) (bool, error) {
-	if robj.Type != "string" {
-		return false, nil
-	}
-
-	if !bytes.Contains(robj.Value, []byte("xk6-browser.web.vital.metric=")) {
-		return false, nil
-	}
-
-	s := bytes.Index(robj.Value, []byte("{"))
-	e := bytes.Index(robj.Value, []byte("}"))
-	bb := robj.Value[s : e+1]
-	bb = bytes.ReplaceAll(bb, []byte("\\"), []byte(""))
-
+func (fs *FrameSession) parseAndRecordWebVitalMetric(object string) error {
 	var w WebVitalMetric
-	err := json.Unmarshal(bb, &w)
+	err := json.Unmarshal([]byte(object), &w)
 	if err != nil {
-		return false, Error(fmt.Sprintf("failed to parse web vital '%s'", bb))
+		return fmt.Errorf("parse failure: '%w'", err)
 	}
 
 	switch w.Name {
@@ -614,10 +599,10 @@ func (fs *FrameSession) parseAndRecordWebVitalMetric(robj *cdpruntime.RemoteObje
 			w.URL,
 		)
 	default:
-		err = Error(fmt.Sprintf("web vital type not found '%s'", bb))
+		err = fmt.Errorf("type not found: '%s'", w.Name)
 	}
 
-	return err == nil, err
+	return err
 }
 
 func (fs *FrameSession) emitMetric(m *k6metrics.Metric, mRating *k6metrics.Metric, n json.Number, url string) error {

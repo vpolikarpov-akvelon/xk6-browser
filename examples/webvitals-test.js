@@ -15,7 +15,6 @@ export default async function () {
         navigationType: metric.navigationType,
         url: window.location.href,
       }
-      console.log('xk6-browser.web.vital.metric=' + JSON.stringify(m))
       window.testbinding(JSON.stringify(m))
     }
 
