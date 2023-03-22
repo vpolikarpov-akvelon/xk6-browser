@@ -74,6 +74,7 @@ func NewBrowserContext(
 	}
 
 	b.evaluateOnNewDocumentSources = map[bool][]string{requiredScript: {}, userScript: {}}
+	b.evaluateOnNewDocumentSources[requiredScript] = append(b.evaluateOnNewDocumentSources[requiredScript], js.WebVitalIIFEScript)
 	b.evaluateOnNewDocumentSources[requiredScript] = append(b.evaluateOnNewDocumentSources[requiredScript], js.WebVitalScript)
 
 	return &b
