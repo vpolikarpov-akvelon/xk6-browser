@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/grafana/xk6-browser/api"
+	"github.com/grafana/xk6-browser/common/js"
 	"github.com/grafana/xk6-browser/k6error"
 	"github.com/grafana/xk6-browser/k6ext"
 	"github.com/grafana/xk6-browser/log"
@@ -73,6 +74,7 @@ func NewBrowserContext(
 	}
 
 	b.evaluateOnNewDocumentSources = map[bool][]string{requiredScript: {}, userScript: {}}
+	b.evaluateOnNewDocumentSources[requiredScript] = append(b.evaluateOnNewDocumentSources[requiredScript], js.WebVitalScript)
 
 	return &b
 }
