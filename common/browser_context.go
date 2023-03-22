@@ -27,6 +27,11 @@ var (
 	_ api.BrowserContext = &BrowserContext{}
 )
 
+const (
+	requiredScript = true
+	userScript     = false
+)
+
 // BrowserContext stores context information for a single independent browser session.
 // A newly launched browser instance contains a default browser context.
 // Any browser context created aside from the default will be considered an "incognito"
@@ -42,7 +47,10 @@ type BrowserContext struct {
 	logger          *log.Logger
 	vu              k6modules.VU
 
-	evaluateOnNewDocumentSources []string
+	// Stores the required and user initialized scripts.
+	// If the value is true then it required, and must not
+	// be amended or removed by any action.
+	evaluateOnNewDocumentSources map[bool][]string
 }
 
 // NewBrowserContext creates a new browser context.
@@ -63,6 +71,8 @@ func NewBrowserContext(
 	if opts != nil && len(opts.Permissions) > 0 {
 		b.GrantPermissions(opts.Permissions, nil)
 	}
+
+	b.evaluateOnNewDocumentSources = map[bool][]string{requiredScript: {}, userScript: {}}
 
 	return &b
 }
@@ -107,7 +117,7 @@ func (b *BrowserContext) AddInitScript(script goja.Value, arg goja.Value) {
 		}
 	}
 
-	b.evaluateOnNewDocumentSources = append(b.evaluateOnNewDocumentSources, source)
+	b.evaluateOnNewDocumentSources[userScript] = append(b.evaluateOnNewDocumentSources[userScript], source)
 
 	for _, p := range b.browser.getPages() {
 		p.evaluateOnNewDocument(source)
@@ -238,7 +248,11 @@ func (b *BrowserContext) NewPage() (api.Page, error) {
 	}
 	b.logger.Debugf("BrowserContext:NewPage:return", "bctxid:%v ptid:%s", bctxid, ptid)
 
-	for _, s := range b.evaluateOnNewDocumentSources {
+	for _, s := range b.evaluateOnNewDocumentSources[requiredScript] {
+		p.evaluateOnNewDocument(s)
+	}
+
+	for _, s := range b.evaluateOnNewDocumentSources[userScript] {
 		p.evaluateOnNewDocument(s)
 	}
 
