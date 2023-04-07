@@ -39,68 +39,23 @@ func (pe *objectPropertyParseError) Unwrap() error {
 	return pe.error
 }
 
-type multiError struct {
-	Errors []error
-}
-
-func (me *multiError) append(err error) {
-	me.Errors = append(me.Errors, err)
-}
-
-func (me multiError) Error() string {
-	if len(me.Errors) == 0 {
-		return ""
-	}
-	if len(me.Errors) == 1 {
-		return me.Errors[0].Error()
-	}
-
-	var buf strings.Builder
-	fmt.Fprintf(&buf, "%d errors occurred:\n", len(me.Errors))
-	for _, e := range me.Errors {
-		fmt.Fprintf(&buf, "\t* %s\n", e)
-	}
-
-	return buf.String()
-}
-
-func multierror(err error, errs ...error) error {
-	me := &multiError{}
-	// We can't use errors.As(), as we want to know if err is of type
-	// multiError, not any error in the chain. If err contains a wrapped
-	// multierror, start a new multiError that will contain err.
-	e, ok := err.(*multiError) //nolint:errorlint
-
-	if ok {
-		me = e
-	} else if err != nil {
-		me.append(err)
-	}
-
-	for _, e := range errs {
-		me.append(e)
-	}
-
-	return me
-}
-
 func parseRemoteObjectPreview(op *cdpruntime.ObjectPreview) (map[string]any, error) {
 	obj := make(map[string]any)
-	var result error
+	var result []error
 	if op.Overflow {
-		result = multierror(result, &objectOverflowError{})
+		result = append(result, &objectOverflowError{})
 	}
 
 	for _, p := range op.Properties {
 		val, err := parseRemoteObjectValue(p.Type, p.Value, p.ValuePreview)
 		if err != nil {
-			result = multierror(result, &objectPropertyParseError{err, p.Name})
+			result = append(result, &objectPropertyParseError{err, p.Name})
 			continue
 		}
 		obj[p.Name] = val
 	}
 
-	return obj, result
+	return obj, errors.Join(result...)
 }
 
 //nolint:cyclop
@@ -189,20 +144,13 @@ func handleParseRemoteObjectErr(ctx context.Context, err error, logger *logrus.E
 		ooe *objectOverflowError
 		ope *objectPropertyParseError
 	)
-	var merr *multiError
-	if !errors.As(err, &merr) {
+	switch {
+	case errors.As(err, &ooe):
+		logger.Warn(ooe)
+	case errors.As(err, &ope):
+		logger.WithError(ope).Error()
+	default:
 		// If this panics it's a bug :)
 		k6ext.Panic(ctx, "parsing remote object value: %w", err)
-	}
-	for _, e := range merr.Errors {
-		switch {
-		case errors.As(e, &ooe):
-			logger.Warn(ooe)
-		case errors.As(e, &ope):
-			logger.WithError(ope).Error()
-		default:
-			// If this panics it's a bug :)
-			k6ext.Panic(ctx, "parsing remote object value: %w", e)
-		}
 	}
 }
