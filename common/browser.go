@@ -7,7 +7,6 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
-	"time"
 
 	"github.com/grafana/xk6-browser/api"
 	"github.com/grafana/xk6-browser/k6ext"
@@ -180,7 +179,6 @@ func (b *Browser) initEvents() error {
 	go func() {
 		defer func() {
 			b.logger.Debugf("Browser:initEvents:defer", "ctx err: %v", cancelCtx.Err())
-			b.browserProc.didLoseConnection()
 			if b.cancelFn != nil {
 				b.cancelFn()
 			}
@@ -434,6 +432,9 @@ func (b *Browser) newPageInContext(id cdp.BrowserContextID) (*Page, error) {
 
 // Close shuts down the browser.
 func (b *Browser) Close() {
+	// TODO: Perform all browser process closing and cleanup procedures
+	// based on global test run finish event.
+
 	if b.closed {
 		b.logger.Warnf(
 			"Browser:Close",
@@ -443,52 +444,21 @@ func (b *Browser) Close() {
 	}
 	b.closed = true
 
-	defer func() {
-		if err := b.browserProc.Cleanup(); err != nil {
-			b.logger.Errorf("Browser:Close", "cleaning up the user data directory: %v", err)
-		}
-	}()
-
 	b.logger.Debugf("Browser:Close", "")
 	atomic.CompareAndSwapInt64(&b.state, b.state, BrowserStateClosed)
 
-	// Signal to the connection and the process that we're gracefully closing.
-	// We ignore any IO errors reading from the WS connection, because the below
-	// CDP Browser.close command ends the connection unexpectedly, which causes
-	// `websocket.ReadMessage()` to return `close 1006 (abnormal closure):
-	// unexpected EOF`.
+	// We ignore any IO errors reading from the WS connection just before
+	// closing it in order to prevent possible unexpected connection end
+	// which might cause `websocket.ReadMessage()` to return `close 1006
+	// (abnormal closure): unexpected EOF`.
 	b.conn.IgnoreIOErrors()
-	b.browserProc.GracefulClose()
 
-	// If the browser is not being executed remotely, send the Browser.close CDP
-	// command, which triggers the browser process to exit.
-	if !b.browserOpts.isRemoteBrowser {
-		var closeErr *websocket.CloseError
-		err := cdpbrowser.Close().Do(cdp.WithExecutor(b.ctx, b.conn))
-		if err != nil && !errors.As(err, &closeErr) {
-			k6ext.Panic(b.ctx, "closing the browser: %v", err)
-		}
-	}
-
-	// Wait for all outstanding events (e.g. Target.detachedFromTarget) to be
-	// processed, and for the process to exit gracefully. Otherwise kill it
-	// forcefully after the timeout.
-	timeout := time.Second
-	select {
-	case <-b.browserProc.processDone:
-	case <-time.After(timeout):
-		b.logger.Debugf("Browser:Close", "killing browser process with PID %d after %s", b.browserProc.Pid(), timeout)
-		b.browserProc.Terminate()
-	}
-
-	// This is unintuitive, since the process exited, so the connection would've
-	// been closed as well. The reason we still call conn.Close() here is to
-	// close all sessions and emit the EventConnectionClose event, which will
-	// trigger the cancellation of the main browser context. We don't call it
-	// before the process is done to avoid disconnecting too early, since we
-	// expect some CDP events to arrive after Browser.close, and we can't know
-	// for sure when that has finished. This will error writing to the socket,
-	// but we ignore it.
+	// The reason we call conn.Close() here is to close all sessions and emit
+	// the EventConnectionClose event, which will trigger the cancellation of
+	// the main browser context. We don't call it before the process is done to
+	// avoid disconnecting too early, since we expect some CDP events to arrive
+	// after Browser.close, and we can't know for sure when that has finished.
+	// This will error writing to the socket, but we ignore it.
 	b.conn.Close()
 }
 
