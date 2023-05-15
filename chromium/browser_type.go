@@ -58,7 +58,8 @@ func NewBrowserType(vu k6modules.VU) *BrowserType {
 	return &b
 }
 
-func (b *BrowserType) init(
+// Init initializes k6 browser context, options and logger.
+func (b *BrowserType) Init(
 	isRemoteBrowser bool,
 ) (context.Context, *common.BrowserOptions, *log.Logger, error) {
 	ctx := b.initContext()
@@ -101,7 +102,7 @@ func (b *BrowserType) initContext() context.Context {
 
 // Connect attaches k6 browser to an existing browser instance.
 func (b *BrowserType) Connect(wsEndpoint string) api.Browser {
-	ctx, browserOpts, logger, err := b.init(true)
+	ctx, browserOpts, logger, err := b.Init(true)
 	if err != nil {
 		k6ext.Panic(ctx, "initializing browser type: %w", err)
 	}
@@ -156,7 +157,7 @@ func (b *BrowserType) link(
 // Launch allocates a new Chrome browser process and returns a new api.Browser value,
 // which can be used for controlling the Chrome browser.
 func (b *BrowserType) Launch() (_ api.Browser, browserProcessID int) {
-	ctx, browserOpts, logger, err := b.init(false)
+	ctx, browserOpts, logger, err := b.Init(false)
 	if err != nil {
 		k6ext.Panic(ctx, "initializing browser type: %w", err)
 	}
