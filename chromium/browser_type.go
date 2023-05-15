@@ -122,7 +122,7 @@ func (b *BrowserType) Connect(wsEndpoint string) api.Browser {
 func (b *BrowserType) connect(
 	ctx context.Context, wsURL string, opts *common.BrowserOptions, logger *log.Logger,
 ) (*common.Browser, error) {
-	browserProc, err := b.link(ctx, wsURL, logger)
+	browserProc, err := b.Link(ctx, wsURL, logger)
 	if browserProc == nil {
 		return nil, fmt.Errorf("connecting to browser: %w", err)
 	}
@@ -141,7 +141,8 @@ func (b *BrowserType) connect(
 	return browser, nil
 }
 
-func (b *BrowserType) link(
+// Link returns a browser process handle to a remotely running browser instance.
+func (b *BrowserType) Link(
 	ctx context.Context, wsURL string, logger *log.Logger,
 ) (*common.BrowserProcess, error) {
 	bProcCtx, bProcCtxCancel := context.WithCancel(ctx)
