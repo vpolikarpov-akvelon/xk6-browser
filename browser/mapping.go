@@ -9,7 +9,7 @@ import (
 	"github.com/dop251/goja"
 
 	"github.com/grafana/xk6-browser/api"
-	"github.com/grafana/xk6-browser/chromium"
+	"github.com/grafana/xk6-browser/common"
 	"github.com/grafana/xk6-browser/env"
 	"github.com/grafana/xk6-browser/k6error"
 	"github.com/grafana/xk6-browser/k6ext"
@@ -38,9 +38,9 @@ func mapBrowserToGoja(vu moduleVU) *goja.Object {
 		// TODO: Use k6 LookupEnv instead of OS package methods.
 		// See https://github.com/grafana/xk6-browser/issues/822.
 		wsURL, isRemoteBrowser = env.IsRemoteBrowser(os.LookupEnv)
-		browserType            = chromium.NewBrowserType(vu)
+		browser                = &common.Browser{}
 	)
-	for k, v := range mapBrowserType(vu, browserType, wsURL, isRemoteBrowser) {
+	for k, v := range mapBrowser(vu, browser, wsURL, isRemoteBrowser) {
 		err := obj.Set(k, rt.ToValue(v))
 		if err != nil {
 			k6common.Throw(rt, fmt.Errorf("mapping: %w", err))
@@ -679,7 +679,7 @@ func mapBrowserContext(vu moduleVU, bc api.BrowserContext) mapping {
 }
 
 // mapBrowser to the JS module.
-func mapBrowser(vu moduleVU, b api.Browser) mapping {
+func mapBrowser(vu moduleVU, b api.Browser, wsURL string, isRemoteBrowser bool) mapping {
 	rt := vu.Runtime()
 	return mapping{
 		"close":       b.Close,
@@ -706,36 +706,6 @@ func mapBrowser(vu moduleVU, b api.Browser) mapping {
 				return nil, err //nolint:wrapcheck
 			}
 			return mapPage(vu, page), nil
-		},
-	}
-}
-
-// mapBrowserType to the JS module.
-func mapBrowserType(vu moduleVU, bt api.BrowserType, wsURL string, isRemoteBrowser bool) mapping {
-	rt := vu.Runtime()
-	return mapping{
-		"connect": func(wsEndpoint string, opts goja.Value) *goja.Object {
-			b := bt.Connect(wsEndpoint)
-			m := mapBrowser(vu, b)
-			return rt.ToValue(m).ToObject(rt)
-		},
-		"executablePath":          bt.ExecutablePath,
-		"launchPersistentContext": bt.LaunchPersistentContext,
-		"name":                    bt.Name,
-		"launch": func(opts goja.Value) *goja.Object {
-			// If browser is remote, transition from launch
-			// to connect and avoid storing the browser pid
-			// as we have no access to it.
-			if isRemoteBrowser {
-				m := mapBrowser(vu, bt.Connect(wsURL))
-				return rt.ToValue(m).ToObject(rt)
-			}
-
-			b, pid := bt.Launch()
-			// store the pid so we can kill it later on panic.
-			vu.registerPid(pid)
-			m := mapBrowser(vu, b)
-			return rt.ToValue(m).ToObject(rt)
 		},
 	}
 }
