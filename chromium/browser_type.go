@@ -175,6 +175,23 @@ func (b *BrowserType) Launch() (_ api.Browser, browserProcessID int) {
 	return bp, pid
 }
 
+// Allocate allocates a new local browser process based on given context and options.
+func (b *BrowserType) Allocate(
+	ctx context.Context, opts *common.BrowserOptions, logger *log.Logger,
+) (*common.BrowserProcess, error) {
+	flags, err := prepareFlags(opts, &(b.vu.State()).Options)
+	if err != nil {
+		return nil, fmt.Errorf("%w", err)
+	}
+	dataDir := &storage.Dir{}
+	if err := dataDir.Make("", flags["user-data-dir"]); err != nil {
+		return nil, fmt.Errorf("%w", err)
+	}
+	flags["user-data-dir"] = dataDir.Dir
+
+	return b.allocate(ctx, opts, flags, dataDir, logger)
+}
+
 func (b *BrowserType) launch(
 	ctx context.Context, opts *common.BrowserOptions, logger *log.Logger,
 ) (_ *common.Browser, pid int, _ error) {
