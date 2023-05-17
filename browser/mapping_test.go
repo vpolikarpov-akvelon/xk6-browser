@@ -43,7 +43,9 @@ func customMappings() map[string]string {
 		// TODO: browser.on method is unexposed until more event
 		// types other than 'disconnect' are supported.
 		// See: https://github.com/grafana/xk6-browser/issues/913
-		"Browser.on": "",
+		"Browser.on":         "",
+		"Browser.contexts":   "",
+		"Browser.newContext": "",
 	}
 }
 

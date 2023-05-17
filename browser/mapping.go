@@ -678,36 +678,16 @@ func mapBrowserContext(vu moduleVU, bc api.BrowserContext) mapping {
 // mapBrowser to the JS module.
 func mapBrowser(vu moduleVU, wsURL string, isRemoteBrowser bool) mapping { //nolint:funlen
 	var (
-		rt  = vu.Runtime()
 		ctx = context.Background()
 		bt  = chromium.NewBrowserType(vu)
 	)
 	return mapping{
-		"contexts": func() ([]api.BrowserContext, error) {
-			b, err := getOrInitBrowser(ctx, bt, vu, wsURL, isRemoteBrowser)
-			if err != nil {
-				return nil, err
-			}
-			return b.Contexts(), nil
-		},
 		"isConnected": func() (bool, error) {
 			b, err := getOrInitBrowser(ctx, bt, vu, wsURL, isRemoteBrowser)
 			if err != nil {
 				return false, err
 			}
 			return b.IsConnected(), nil
-		},
-		"newContext": func(opts goja.Value) (*goja.Object, error) {
-			b, err := getOrInitBrowser(ctx, bt, vu, wsURL, isRemoteBrowser)
-			if err != nil {
-				return nil, err
-			}
-			bctx, err := b.NewContext(opts)
-			if err != nil {
-				return nil, err //nolint:wrapcheck
-			}
-			m := mapBrowserContext(vu, bctx)
-			return rt.ToValue(m).ToObject(rt), nil
 		},
 		"userAgent": func() (string, error) {
 			b, err := getOrInitBrowser(ctx, bt, vu, wsURL, isRemoteBrowser)
@@ -732,6 +712,7 @@ func mapBrowser(vu moduleVU, wsURL string, isRemoteBrowser bool) mapping { //nol
 			if err != nil {
 				return nil, err //nolint:wrapcheck
 			}
+
 			return mapPage(vu, page), nil
 		},
 	}
