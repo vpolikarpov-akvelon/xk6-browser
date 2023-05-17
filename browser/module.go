@@ -14,6 +14,7 @@ type (
 	// instances for each VU.
 	RootModule struct {
 		PidRegistry *pidRegistry
+		BrowserPool *browserPool
 	}
 
 	// JSModule exposes the properties available to the JS script.
@@ -38,6 +39,7 @@ var (
 func New() *RootModule {
 	return &RootModule{
 		PidRegistry: &pidRegistry{},
+		BrowserPool: &browserPool{},
 	}
 }
 
@@ -49,6 +51,7 @@ func (m *RootModule) NewModuleInstance(vu k6modules.VU) k6modules.Instance {
 			Browser: mapBrowserToGoja(moduleVU{
 				VU:          vu,
 				pidRegistry: m.PidRegistry,
+				browserPool: m.BrowserPool,
 			}),
 			Devices: common.GetDevices(),
 		},
