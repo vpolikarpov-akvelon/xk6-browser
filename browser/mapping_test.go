@@ -40,6 +40,8 @@ func customMappings() map[string]string {
 		"Frame.loaderID":         "",
 		"JSHandle.objectID":      "",
 		"Browser.close":          "",
+		"Browser.contexts":       "",
+		"Browser.newContext":     "",
 	}
 }
 
