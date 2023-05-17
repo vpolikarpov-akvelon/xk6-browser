@@ -93,7 +93,7 @@ func (b *BrowserType) Init(
 }
 
 func (b *BrowserType) initContext() context.Context {
-	ctx := k6ext.WithVU(b.vu.Context(), b.vu)
+	ctx := k6ext.WithVU(context.Background(), b.vu)
 	ctx = k6ext.WithCustomMetrics(ctx, b.k6Metrics)
 	ctx = common.WithHooks(ctx, b.hooks)
 	ctx = common.WithIterationID(ctx, fmt.Sprintf("%x", b.randSrc.Uint64()))
