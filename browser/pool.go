@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/grafana/xk6-browser/api"
+	"github.com/grafana/xk6-browser/common"
 )
 
 type browserPool struct {
@@ -26,4 +27,32 @@ func (p *browserPool) getBrowser(id string) (b api.Browser, ok bool) {
 
 func (p *browserPool) deleteBrowser(id string) {
 	p.m.Delete(id)
+}
+
+type browserProcessPool struct {
+	mu sync.Mutex
+	m  map[string]*common.BrowserProcess
+}
+
+func newBrowserProcessPool() *browserProcessPool {
+	return &browserProcessPool{
+		m: make(map[string]*common.BrowserProcess),
+	}
+}
+
+func (p *browserProcessPool) setBrowserProcess(handle string, bp *common.BrowserProcess) {
+	p.m[handle] = bp
+}
+
+func (p *browserProcessPool) getBrowserProcess(handle string) (bp *common.BrowserProcess, ok bool) {
+	bp, ok = p.m[handle]
+	return
+}
+
+func (p *browserProcessPool) lockBrowserProcess() {
+	p.mu.Lock()
+}
+
+func (p *browserProcessPool) unlockBrowserProcess() {
+	p.mu.Unlock()
 }

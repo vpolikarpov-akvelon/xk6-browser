@@ -17,6 +17,7 @@ type moduleVU struct {
 
 	*pidRegistry
 	*browserPool
+	*browserProcessPool
 }
 
 func (vu moduleVU) Context() context.Context {
