@@ -460,6 +460,9 @@ func (b *Browser) Close() {
 	// after Browser.close, and we can't know for sure when that has finished.
 	// This will error writing to the socket, but we ignore it.
 	b.conn.Close()
+	// Explicitly cancel browser context so any child goroutine depending on it,
+	// such as event reading goroutines for browser and frame, can exit gracefully.
+	b.cancelFn()
 }
 
 // Contexts returns list of browser contexts.
