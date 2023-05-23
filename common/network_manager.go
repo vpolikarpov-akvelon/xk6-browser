@@ -153,7 +153,7 @@ func (m *NetworkManager) emitRequestMetrics(req *Request) {
 		tags = tags.With("url", req.URL())
 	}
 
-	k6metrics.PushIfNotDone(m.ctx, state.Samples, k6metrics.ConnectedSamples{
+	k6metrics.PushIfNotDone(m.vu.Context(), state.Samples, k6metrics.ConnectedSamples{
 		Samples: []k6metrics.Sample{
 			{
 				TimeSeries: k6metrics.TimeSeries{Metric: state.BuiltinMetrics.DataSent, Tags: tags},
@@ -213,7 +213,7 @@ func (m *NetworkManager) emitResponseMetrics(resp *Response, req *Request) {
 	tags = tags.With("from_prefetch_cache", strconv.FormatBool(fromPreCache))
 	tags = tags.With("from_service_worker", strconv.FormatBool(fromSvcWrk))
 
-	k6metrics.PushIfNotDone(m.ctx, state.Samples, k6metrics.ConnectedSamples{
+	k6metrics.PushIfNotDone(m.vu.Context(), state.Samples, k6metrics.ConnectedSamples{
 		Samples: []k6metrics.Sample{
 			{
 				TimeSeries: k6metrics.TimeSeries{Metric: state.BuiltinMetrics.HTTPReqs, Tags: tags},
@@ -234,7 +234,7 @@ func (m *NetworkManager) emitResponseMetrics(resp *Response, req *Request) {
 	})
 
 	if resp != nil && resp.timing != nil {
-		k6metrics.PushIfNotDone(m.ctx, state.Samples, k6metrics.ConnectedSamples{
+		k6metrics.PushIfNotDone(m.vu.Context(), state.Samples, k6metrics.ConnectedSamples{
 			Samples: []k6metrics.Sample{
 				{
 					TimeSeries: k6metrics.TimeSeries{Metric: state.BuiltinMetrics.HTTPReqConnecting, Tags: tags},
