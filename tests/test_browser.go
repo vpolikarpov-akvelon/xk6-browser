@@ -129,7 +129,7 @@ func newTestBrowser(tb testing.TB, opts ...any) *testBrowser {
 
 	tb.Cleanup(func() {
 		select {
-		case <-vu.Context().Done():
+		case <-bt.Ctx.Done():
 		default:
 			if !skipClose {
 				b.Close()
@@ -147,7 +147,7 @@ func newTestBrowser(tb testing.TB, opts ...any) *testBrowser {
 		browserType: bt,
 		pid:         pid,
 		wsURL:       cb.WsURL(),
-		cancel:      cancel,
+		cancel:      bt.Cancel,
 	}
 	if enableFileServer {
 		tbr = tbr.withFileServer()
