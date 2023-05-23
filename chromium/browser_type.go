@@ -32,7 +32,9 @@ import (
 type BrowserType struct {
 	// FIXME: This is only exported because testBrowser needs it. Contexts
 	// shouldn't be stored on structs if we can avoid it.
-	Ctx          context.Context
+	Ctx    context.Context
+	Cancel context.CancelFunc
+
 	vu           k6modules.VU
 	hooks        *common.Hooks
 	k6Metrics    *k6ext.CustomMetrics
@@ -130,6 +132,7 @@ func (b *BrowserType) connect(
 	// cancellation and shutdown.
 	browserCtx, browserCtxCancel := context.WithCancel(ctx)
 	b.Ctx = browserCtx
+	b.Cancel = browserCtxCancel
 	browser, err := common.NewBrowser(
 		browserCtx, browserCtxCancel, browserProc, opts, logger,
 	)
@@ -209,6 +212,7 @@ func (b *BrowserType) launch(
 	// cancellation and shutdown.
 	browserCtx, browserCtxCancel := context.WithCancel(ctx)
 	b.Ctx = browserCtx
+	b.Cancel = browserCtxCancel
 	browser, err := common.NewBrowser(browserCtx, browserCtxCancel,
 		browserProc, opts, logger)
 	if err != nil {
