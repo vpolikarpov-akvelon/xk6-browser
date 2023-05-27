@@ -172,7 +172,7 @@ func (b *BrowserContext) Close() {
 	if b.id == "" {
 		k6ext.Panic(b.ctx, "default browser context can't be closed")
 	}
-	if err := b.browser.disposeContext(b.id); err != nil {
+	if err := b.browser.disposeContext(); err != nil {
 		k6ext.Panic(b.ctx, "disposing browser context: %w", err)
 	}
 }

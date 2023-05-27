@@ -708,7 +708,7 @@ func mapBrowser(vu moduleVU, wsURL string, isRemoteBrowser bool) mapping { //nol
 			if err != nil {
 				return nil, err
 			}
-			page, err := b.NewPage(opts)
+			page, err := b.NewPage(nil)
 			if err != nil {
 				return nil, err //nolint:wrapcheck
 			}
@@ -718,18 +718,25 @@ func mapBrowser(vu moduleVU, wsURL string, isRemoteBrowser bool) mapping { //nol
 	}
 }
 
-// getOrInitBrowser retrieves the browser for the iteration from the browser registry
-// if it is already initialized. Otherwise initializes a new browser for the iteration
-// and stores it in the registry.
-func getOrInitBrowser(
-	ctx context.Context, bt *chromium.BrowserType, vu moduleVU, wsURL string, isRemoteBrowser bool,
-) (api.Browser, error) {
-	// Index browser pool per VU-scenario-iteration
-	id := fmt.Sprintf("%d-%s-%d",
+// iterID generates an identifier for the iteration.
+// The identifier follows the format VUID-scenario-iteration
+// in order to identify every iteration per scenario and VY,
+// as VUID and iteration are monotonically increasing integers.
+func iterID(vu moduleVU) string {
+	return fmt.Sprintf("%d-%s-%d",
 		vu.State().VUID,
 		k6ext.GetScenarioName(vu.Context()),
 		vu.State().Iteration,
 	)
+}
+
+// getOrInitBrowser retrieves the browser entry for the iteration from the browser registry
+// if it is already initialized. Otherwise initializes a new browser and browser context for
+// the iteration and stores its corresponding entry in the registry.
+func getOrInitBrowser(
+	ctx context.Context, bt *chromium.BrowserType, vu moduleVU, wsURL string, isRemoteBrowser bool,
+) (api.Browser, error) {
+	id := iterID(vu)
 
 	var (
 		ok  bool
@@ -737,10 +744,14 @@ func getOrInitBrowser(
 		b   api.Browser
 	)
 
+	// If browser for the iteration is
+	// already in the registry, return it
 	if b, ok = vu.getBrowser(id); ok {
 		return b, nil
 	}
 
+	// Otherwise initialize browse, add
+	// entry to registry, and return it
 	if isRemoteBrowser {
 		b, err = bt.Connect(ctx, wsURL)
 		if err != nil {
@@ -757,6 +768,7 @@ func getOrInitBrowser(
 
 	vu.setBrowser(id, b)
 
+	// Close browser on VU context done
 	go func(ctx context.Context) {
 		<-ctx.Done()
 		b.Close()
