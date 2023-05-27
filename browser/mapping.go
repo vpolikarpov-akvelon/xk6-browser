@@ -689,6 +689,17 @@ func mapBrowser(vu moduleVU, wsURL string, isRemoteBrowser bool) mapping { //nol
 			}
 			return b.IsConnected(), nil
 		},
+		"setupContext": func(opts goja.Value) error {
+			// If browser is already initialized for the
+			// iteration, return error
+			_, ok := vu.getBrowser(iterID(vu))
+			if ok {
+				return errors.New("browser context already initialized")
+			}
+			// Otherwise initialize browser with bctx opts
+			_, err := getOrInitBrowser(ctx, bt, vu, wsURL, isRemoteBrowser, opts)
+			return err
+		},
 		"userAgent": func() (string, error) {
 			b, err := getOrInitBrowser(ctx, bt, vu, wsURL, isRemoteBrowser, nil)
 			if err != nil {
