@@ -148,21 +148,26 @@ func (r *remoteRegistry) isRemoteBrowser() (string, bool) {
 	return wsURL, true
 }
 
+type browserEntry struct {
+	b    api.Browser
+	bctx api.BrowserContext
+}
+
 // browserRegistry stores browser instances indexed per
 // iteration as identified by VUID-scenario-iterationID.
 type browserRegistry struct {
 	m sync.Map
 }
 
-func (p *browserRegistry) setBrowser(id string, b api.Browser) {
-	p.m.Store(id, b)
+func (p *browserRegistry) setBrowser(id string, be *browserEntry) {
+	p.m.Store(id, be)
 }
 
-func (p *browserRegistry) getBrowser(id string) (b api.Browser, ok bool) {
+func (p *browserRegistry) getBrowser(id string) (be *browserEntry, ok bool) {
 	e, ok := p.m.Load(id)
 	if ok {
-		b, ok = e.(api.Browser)
-		return b, ok
+		be, ok = e.(*browserEntry)
+		return be, ok
 	}
 
 	return nil, false
