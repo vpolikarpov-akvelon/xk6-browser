@@ -45,6 +45,14 @@ func customMappings() map[string]string {
 	}
 }
 
+// extraMappings returns additionall mappings exposed to the JS
+// API which do not have a direct relationship with the Go API.
+func extraMappings() map[string]struct{} {
+	return map[string]struct{}{
+		"Browser.setupContext": {},
+	}
+}
+
 // TestMappings tests that all the methods of the API (api/) are
 // to the module. This is to ensure that we don't forget to map
 // a new method to the module.
@@ -66,6 +74,7 @@ func TestMappings(t *testing.T) {
 			},
 		}
 		customMappings = customMappings()
+		extraMappings  = extraMappings()
 	)
 
 	// testMapping tests that all the methods of an API are mapped
@@ -112,7 +121,7 @@ func TestMappings(t *testing.T) {
 		}
 		// detect redundant mappings.
 		for m := range mapped {
-			if !tested[m] {
+			if !tested[m] && !isExtraMapping(extraMappings, typName, m) {
 				t.Errorf("method %s is redundant for %s", m, typName)
 			}
 		}
@@ -224,4 +233,11 @@ func isCustomMapping(customMappings map[string]string, typ, method string) (stri
 	}
 
 	return "", false
+}
+
+// isExtraMapping returns true if the method is an extra mapping.
+func isExtraMapping(extraMappings map[string]struct{}, typ, method string) bool {
+	name := typ + "." + method
+	_, ok := extraMappings[name]
+	return ok
 }
