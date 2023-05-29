@@ -509,8 +509,8 @@ func (b *Browser) IsConnected() bool {
 	return b.browserProc.isConnected()
 }
 
-// NewContext creates a new incognito-like browser context.
-func (b *Browser) NewContext(opts goja.Value) (api.BrowserContext, error) {
+// SetupContext creates a new incognito-like browser context.
+func (b *Browser) SetupContext(opts goja.Value) (api.BrowserContext, error) {
 	action := target.CreateBrowserContext().WithDisposeOnDetach(true)
 	browserContextID, err := action.Do(cdp.WithExecutor(b.ctx, b.conn))
 	b.logger.Debugf("Browser:NewContext", "bctxid:%v", browserContextID)
@@ -536,7 +536,7 @@ func (b *Browser) NewContext(opts goja.Value) (api.BrowserContext, error) {
 
 // NewPage creates a new tab in the browser window.
 func (b *Browser) NewPage() (api.Page, error) {
-	browserCtx, err := b.NewContext(nil)
+	browserCtx, err := b.SetupContext(nil)
 	if err != nil {
 		return nil, fmt.Errorf("new page: %w", err)
 	}
