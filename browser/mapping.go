@@ -683,28 +683,28 @@ func mapBrowser(vu moduleVU, wsURL string, isRemoteBrowser bool) mapping { //nol
 	)
 	return mapping{
 		"isConnected": func() (bool, error) {
-			b, err := getOrInitBrowser(ctx, bt, vu, wsURL, isRemoteBrowser)
+			b, err := getOrInitBrowser(ctx, bt, vu, wsURL, isRemoteBrowser, nil)
 			if err != nil {
 				return false, err
 			}
 			return b.IsConnected(), nil
 		},
 		"userAgent": func() (string, error) {
-			b, err := getOrInitBrowser(ctx, bt, vu, wsURL, isRemoteBrowser)
+			b, err := getOrInitBrowser(ctx, bt, vu, wsURL, isRemoteBrowser, nil)
 			if err != nil {
 				return "", err
 			}
 			return b.UserAgent(), nil
 		},
 		"version": func() (string, error) {
-			b, err := getOrInitBrowser(ctx, bt, vu, wsURL, isRemoteBrowser)
+			b, err := getOrInitBrowser(ctx, bt, vu, wsURL, isRemoteBrowser, nil)
 			if err != nil {
 				return "", err
 			}
 			return b.Version(), nil
 		},
 		"newPage": func(opts goja.Value) (mapping, error) {
-			b, err := getOrInitBrowser(ctx, bt, vu, wsURL, isRemoteBrowser)
+			b, err := getOrInitBrowser(ctx, bt, vu, wsURL, isRemoteBrowser, nil)
 			if err != nil {
 				return nil, err
 			}
@@ -734,7 +734,7 @@ func iterID(vu moduleVU) string {
 // if it is already initialized. Otherwise initializes a new browser and browser context for
 // the iteration and stores its corresponding entry in the registry.
 func getOrInitBrowser(
-	ctx context.Context, bt *chromium.BrowserType, vu moduleVU, wsURL string, isRemoteBrowser bool,
+	ctx context.Context, bt *chromium.BrowserType, vu moduleVU, wsURL string, isRemoteBrowser bool, bctxOpts goja.Value,
 ) (api.Browser, error) {
 	id := iterID(vu)
 
@@ -764,6 +764,11 @@ func getOrInitBrowser(
 			return nil, err //nolint:wrapcheck
 		}
 		vu.registerPid(pid)
+	}
+
+	_, err = b.SetupContext(bctxOpts)
+	if err != nil {
+		return nil, err //nolint:wrapcheck
 	}
 
 	vu.setBrowser(id, b)
