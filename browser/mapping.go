@@ -708,7 +708,7 @@ func mapBrowser(vu moduleVU, wsURL string, isRemoteBrowser bool) mapping { //nol
 			if err != nil {
 				return nil, err
 			}
-			page, err := b.NewPage(nil)
+			page, err := b.NewPage()
 			if err != nil {
 				return nil, err //nolint:wrapcheck
 			}
