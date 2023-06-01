@@ -20,7 +20,7 @@ func TestBrowserContextAddCookies(t *testing.T) {
 		testCookieName := "test_cookie_name"
 		testCookieValue := "test_cookie_value"
 
-		bc, err := tb.NewContext(nil)
+		bc, err := tb.SetupContext(nil)
 		require.NoError(t, err)
 		cookies, err := tb.runJavaScript(`
 			[
@@ -179,7 +179,7 @@ func TestBrowserContextAddCookies(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			bc, err := tb.NewContext(nil)
+			bc, err := tb.SetupContext(nil)
 			require.NoError(t, err)
 
 			if tt.shouldPanic {
