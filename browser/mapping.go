@@ -728,7 +728,7 @@ func mapBrowser(vu moduleVU, wsURL string, isRemoteBrowser bool) mapping { //nol
 			if err != nil {
 				return nil, err
 			}
-			page, err := b.NewPage(context.Background(), opts)
+			page, err := b.NewPage(vu.traceCtx(iterID(vu)), opts)
 			if err != nil {
 				return nil, err //nolint:wrapcheck
 			}
