@@ -737,18 +737,24 @@ func mapBrowser(vu moduleVU, wsURL string, isRemoteBrowser bool) mapping { //nol
 	}
 }
 
+// TODO: With the inclusion of traces this would be called too many times,
+// so avoid multiple calls to this method and/or generating ID based on
+// concatenation of VUID-scenario-iterID.
+func iterID(vu moduleVU) string {
+	return fmt.Sprintf("%d-%s-%d",
+		vu.State().VUID,
+		k6ext.GetScenarioName(vu.Context()),
+		vu.State().Iteration,
+	)
+}
+
 // getOrInitBrowser retrieves the browser for the iteration from the browser registry
 // if it is already initialized. Otherwise initializes a new browser for the iteration
 // and stores it in the registry.
 func getOrInitBrowser(
 	ctx context.Context, bt *chromium.BrowserType, vu moduleVU, wsURL string, isRemoteBrowser bool,
 ) (api.Browser, error) {
-	// Index browser pool per VU-scenario-iteration
-	id := fmt.Sprintf("%d-%s-%d",
-		vu.State().VUID,
-		k6ext.GetScenarioName(vu.Context()),
-		vu.State().Iteration,
-	)
+	id := iterID(vu)
 
 	var (
 		ok  bool
