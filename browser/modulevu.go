@@ -18,6 +18,7 @@ type moduleVU struct {
 	*pidRegistry
 	*browserRegistry
 	*remoteRegistry
+	*tracesRegistry
 }
 
 func (vu moduleVU) Context() context.Context {

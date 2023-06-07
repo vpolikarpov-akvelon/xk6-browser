@@ -2,9 +2,11 @@
 package browser
 
 import (
+	"context"
 	"log"
 	"net/http"
 	_ "net/http/pprof" //nolint:gosec
+	"os"
 	"sync"
 
 	"github.com/dop251/goja"
@@ -23,6 +25,7 @@ type (
 		PidRegistry     *pidRegistry
 		browserRegistry *browserRegistry
 		remoteRegistry  *remoteRegistry
+		tracesRegistry  *tracesRegistry
 		initOnce        *sync.Once
 	}
 
@@ -62,7 +65,7 @@ func (m *RootModule) NewModuleInstance(vu k6modules.VU) k6modules.Instance {
 	// we've had to place it here so that if an error occurs a
 	// panic can be initiated and safely handled by k6.
 	m.initOnce.Do(func() {
-		m.initialize(vu)
+		m.initialize(context.Background(), vu)
 	})
 	return &ModuleInstance{
 		mod: &JSModule{
@@ -71,6 +74,7 @@ func (m *RootModule) NewModuleInstance(vu k6modules.VU) k6modules.Instance {
 				pidRegistry:     m.PidRegistry,
 				browserRegistry: m.browserRegistry,
 				remoteRegistry:  m.remoteRegistry,
+				tracesRegistry:  m.tracesRegistry,
 			}),
 			Devices: common.GetDevices(),
 		},
@@ -83,17 +87,24 @@ func (mi *ModuleInstance) Exports() k6modules.Exports {
 	return k6modules.Exports{Default: mi.mod}
 }
 
-// initialize initializes the module instance with a new remote registry
-// and debug server, etc.
-func (m *RootModule) initialize(vu k6modules.VU) {
+// initialize initializes the module instance with a new remote registry,
+// tracs registry, and debug server.
+func (m *RootModule) initialize(ctx context.Context, vu k6modules.VU) {
 	var (
 		err     error
 		initEnv = vu.InitEnv()
 	)
+
 	m.remoteRegistry, err = newRemoteRegistry(initEnv.LookupEnv)
 	if err != nil {
 		k6ext.Abort(vu.Context(), "failed to create remote registry: %v", err)
 	}
+
+	m.tracesRegistry, err = newTracesRegistry(ctx, os.LookupEnv)
+	if err != nil {
+		k6ext.Abort(vu.Context(), "failed to create traces registry: %v", err)
+	}
+
 	if _, ok := initEnv.LookupEnv(env.EnableProfiling); ok {
 		go startDebugServer()
 	}
