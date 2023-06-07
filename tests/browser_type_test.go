@@ -22,7 +22,7 @@ func TestBrowserTypeConnect(t *testing.T) {
 
 	b, err := bt.Connect(context.Background(), tb.wsURL)
 	require.NoError(t, err)
-	_, err = b.NewPage(nil)
+	_, err = b.NewPage(context.Background(), nil)
 	require.NoError(t, err)
 }
 

@@ -21,12 +21,13 @@ import (
 )
 
 func TestBrowserNewPage(t *testing.T) {
+	ctx := context.Background()
 	b := newTestBrowser(t)
-	p := b.NewPage(nil)
+	p := b.NewPage(ctx, nil)
 	l := len(b.Contexts())
 	assert.Equal(t, 1, l, "expected there to be 1 browser context, but found %d", l)
 
-	p2 := b.NewPage(nil)
+	p2 := b.NewPage(ctx, nil)
 	l = len(b.Contexts())
 	assert.Equal(t, 2, l, "expected there to be 2 browser context, but found %d", l)
 
@@ -46,7 +47,7 @@ func TestTmpDirCleanup(t *testing.T) {
 	const tmpDirPath = "./"
 
 	b := newTestBrowser(t, withSkipClose(), env.ConstLookup("TMPDIR", tmpDirPath))
-	p := b.NewPage(nil)
+	p := b.NewPage(context.Background(), nil)
 	err := p.Close(nil)
 	require.NoError(t, err)
 

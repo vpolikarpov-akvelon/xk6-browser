@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	"strconv"
 	"testing"
 
@@ -13,7 +14,7 @@ import (
 func TestFramePress(t *testing.T) {
 	tb := newTestBrowser(t)
 
-	p := tb.NewPage(nil)
+	p := tb.NewPage(context.Background(), nil)
 
 	p.SetContent(`<input id="text1">`, nil)
 
@@ -41,7 +42,7 @@ func TestFrameDismissDialogBox(t *testing.T) {
 
 			var (
 				tb = newTestBrowser(t, withFileServer())
-				p  = tb.NewPage(nil)
+				p  = tb.NewPage(context.Background(), nil)
 			)
 
 			opts := tb.toGojaValue(struct {
@@ -83,7 +84,7 @@ func TestFrameNoPanicWithEmbeddedIFrame(t *testing.T) {
 	// run the browser in headfull mode.
 	tb := newTestBrowser(t, withFileServer(), env.ConstLookup(env.BrowserHeadless, "0"))
 
-	p := tb.NewPage(nil)
+	p := tb.NewPage(context.Background(), nil)
 	_, err := p.Goto(
 		tb.staticURL("embedded_iframe.html"),
 		tb.toGojaValue(struct {
@@ -99,7 +100,7 @@ func TestFrameNoPanicWithEmbeddedIFrame(t *testing.T) {
 }
 
 func TestFrameTitle(t *testing.T) {
-	p := newTestBrowser(t).NewPage(nil)
+	p := newTestBrowser(t).NewPage(context.Background(), nil)
 	p.SetContent(`<html><head><title>Some title</title></head></html>`, nil)
 	assert.Equal(t, "Some title", p.MainFrame().Title())
 }

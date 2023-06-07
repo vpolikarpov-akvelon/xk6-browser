@@ -2,6 +2,7 @@ package tests
 
 import (
 	"bytes"
+	"context"
 	_ "embed"
 	"fmt"
 	"image/png"
@@ -55,7 +56,7 @@ var htmlInputButton = fmt.Sprintf(`
 `, mouseHelperScriptSource)
 
 func TestElementHandleBoundingBoxInvisibleElement(t *testing.T) {
-	p := newTestBrowser(t).NewPage(nil)
+	p := newTestBrowser(t).NewPage(context.Background(), nil)
 
 	p.SetContent(`<div style="display:none">hello</div>`, nil)
 	element, err := p.Query("div")
@@ -65,7 +66,7 @@ func TestElementHandleBoundingBoxInvisibleElement(t *testing.T) {
 
 func TestElementHandleBoundingBoxSVG(t *testing.T) {
 	tb := newTestBrowser(t)
-	p := tb.NewPage(nil)
+	p := tb.NewPage(context.Background(), nil)
 
 	p.SetContent(`
 		<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500">
@@ -92,7 +93,7 @@ func TestElementHandleBoundingBoxSVG(t *testing.T) {
 
 func TestElementHandleClick(t *testing.T) {
 	tb := newTestBrowser(t)
-	p := tb.NewPage(nil)
+	p := tb.NewPage(context.Background(), nil)
 
 	p.SetContent(htmlInputButton, nil)
 
@@ -114,7 +115,7 @@ func TestElementHandleClick(t *testing.T) {
 
 func TestElementHandleClickWithNodeRemoved(t *testing.T) {
 	tb := newTestBrowser(t)
-	p := tb.NewPage(nil)
+	p := tb.NewPage(context.Background(), nil)
 
 	p.SetContent(htmlInputButton, nil)
 
@@ -139,7 +140,7 @@ func TestElementHandleClickWithNodeRemoved(t *testing.T) {
 
 func TestElementHandleClickWithDetachedNode(t *testing.T) {
 	tb := newTestBrowser(t)
-	p := tb.NewPage(nil)
+	p := tb.NewPage(context.Background(), nil)
 
 	p.SetContent(htmlInputButton, nil)
 	button, err := p.Query("button")
@@ -219,7 +220,7 @@ func TestElementHandleNonClickable(t *testing.T) {
 func TestElementHandleGetAttribute(t *testing.T) {
 	const want = "https://somewhere"
 
-	p := newTestBrowser(t).NewPage(nil)
+	p := newTestBrowser(t).NewPage(context.Background(), nil)
 	p.SetContent(`
 		<a id="dark-mode-toggle-X" href="https://somewhere">Dark</a>
 	`, nil)
@@ -232,7 +233,7 @@ func TestElementHandleGetAttribute(t *testing.T) {
 }
 
 func TestElementHandleInputValue(t *testing.T) {
-	p := newTestBrowser(t).NewPage(nil)
+	p := newTestBrowser(t).NewPage(context.Background(), nil)
 
 	p.SetContent(`
 		<input value="hello1">
@@ -263,7 +264,7 @@ func TestElementHandleInputValue(t *testing.T) {
 }
 
 func TestElementHandleIsChecked(t *testing.T) {
-	p := newTestBrowser(t).NewPage(nil)
+	p := newTestBrowser(t).NewPage(context.Background(), nil)
 
 	p.SetContent(`<input type="checkbox" checked>`, nil)
 	element, err := p.Query("input")
@@ -285,7 +286,7 @@ func TestElementHandleQueryAll(t *testing.T) {
 		query     = "li.ali"
 	)
 
-	p := newTestBrowser(t).NewPage(nil)
+	p := newTestBrowser(t).NewPage(context.Background(), nil)
 	p.SetContent(`
 		<ul id="aul">
 			<li class="ali">1</li>
@@ -317,7 +318,7 @@ func TestElementHandleQueryAll(t *testing.T) {
 
 func TestElementHandleScreenshot(t *testing.T) {
 	tb := newTestBrowser(t)
-	p := tb.NewPage(nil)
+	p := tb.NewPage(context.Background(), nil)
 
 	p.SetViewportSize(tb.toGojaValue(struct {
 		Width  float64 `js:"width"`
@@ -365,7 +366,7 @@ func TestElementHandleScreenshot(t *testing.T) {
 
 func TestElementHandleWaitForSelector(t *testing.T) {
 	tb := newTestBrowser(t)
-	p := tb.NewPage(nil)
+	p := tb.NewPage(context.Background(), nil)
 	p.SetContent(`<div class="root"></div>`, nil)
 
 	root, err := p.Query(".root")
@@ -394,7 +395,7 @@ func TestElementHandleWaitForSelector(t *testing.T) {
 func TestElementHandlePress(t *testing.T) {
 	tb := newTestBrowser(t)
 
-	p := tb.NewPage(nil)
+	p := tb.NewPage(context.Background(), nil)
 
 	p.SetContent(`<input>`, nil)
 

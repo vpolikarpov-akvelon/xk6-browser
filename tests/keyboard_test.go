@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	_ "embed"
 	"runtime"
 	"testing"
@@ -13,9 +14,10 @@ import (
 
 func TestKeyboardPress(t *testing.T) {
 	tb := newTestBrowser(t)
+	ctx := context.Background()
 
 	t.Run("all_keys", func(t *testing.T) {
-		p := tb.NewPage(nil)
+		p := tb.NewPage(ctx, nil)
 		kb := p.GetKeyboard()
 		layout := keyboardlayout.GetKeyboardLayout("us")
 
@@ -27,7 +29,7 @@ func TestKeyboardPress(t *testing.T) {
 	})
 
 	t.Run("backspace", func(t *testing.T) {
-		p := tb.NewPage(nil)
+		p := tb.NewPage(ctx, nil)
 		kb := p.GetKeyboard()
 
 		p.SetContent(`<input>`, nil)
@@ -43,7 +45,7 @@ func TestKeyboardPress(t *testing.T) {
 	})
 
 	t.Run("combo", func(t *testing.T) {
-		p := tb.NewPage(nil)
+		p := tb.NewPage(ctx, nil)
 		kb := p.GetKeyboard()
 
 		p.SetContent(`<input>`, nil)
@@ -68,7 +70,7 @@ func TestKeyboardPress(t *testing.T) {
 
 	t.Run("meta", func(t *testing.T) {
 		t.Skip("FIXME") // See https://github.com/grafana/xk6-browser/issues/424
-		p := tb.NewPage(nil)
+		p := tb.NewPage(ctx, nil)
 		kb := p.GetKeyboard()
 
 		p.SetContent(`<input>`, nil)
@@ -92,7 +94,7 @@ func TestKeyboardPress(t *testing.T) {
 	})
 
 	t.Run("type does not split on +", func(t *testing.T) {
-		p := tb.NewPage(nil)
+		p := tb.NewPage(ctx, nil)
 		kb := p.GetKeyboard()
 
 		p.SetContent(`<textarea>`, nil)
@@ -105,7 +107,7 @@ func TestKeyboardPress(t *testing.T) {
 	})
 
 	t.Run("capitalization", func(t *testing.T) {
-		p := tb.NewPage(nil)
+		p := tb.NewPage(ctx, nil)
 		kb := p.GetKeyboard()
 
 		p.SetContent(`<textarea>`, nil)
@@ -130,7 +132,7 @@ func TestKeyboardPress(t *testing.T) {
 	})
 
 	t.Run("type not affected by shift", func(t *testing.T) {
-		p := tb.NewPage(nil)
+		p := tb.NewPage(ctx, nil)
 		kb := p.GetKeyboard()
 
 		p.SetContent(`<textarea>`, nil)
@@ -146,7 +148,7 @@ func TestKeyboardPress(t *testing.T) {
 	})
 
 	t.Run("newline", func(t *testing.T) {
-		p := tb.NewPage(nil)
+		p := tb.NewPage(ctx, nil)
 		kb := p.GetKeyboard()
 
 		p.SetContent(`<textarea>`, nil)
@@ -163,7 +165,7 @@ func TestKeyboardPress(t *testing.T) {
 
 	// Replicates the test from https://playwright.dev/docs/api/class-keyboard
 	t.Run("selection", func(t *testing.T) {
-		p := tb.NewPage(nil)
+		p := tb.NewPage(ctx, nil)
 		kb := p.GetKeyboard()
 
 		p.SetContent(`<input>`, nil)

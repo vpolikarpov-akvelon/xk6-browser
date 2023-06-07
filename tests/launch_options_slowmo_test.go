@@ -302,7 +302,7 @@ func testSlowMoImpl(t *testing.T, tb *testBrowser, fn func(*testBrowser)) {
 }
 
 func testPageSlowMoImpl(t *testing.T, tb *testBrowser, fn func(*testBrowser, api.Page)) {
-	p := tb.NewPage(nil)
+	p := tb.NewPage(context.Background(), nil)
 
 	p.SetContent(`
 		<button>a</button>
@@ -318,7 +318,7 @@ func testPageSlowMoImpl(t *testing.T, tb *testBrowser, fn func(*testBrowser, api
 }
 
 func testFrameSlowMoImpl(t *testing.T, tb *testBrowser, fn func(bt *testBrowser, f api.Frame)) {
-	p := tb.NewPage(nil)
+	p := tb.NewPage(context.Background(), nil)
 
 	f := tb.attachFrame(p, "frame1", tb.staticURL("empty.html"))
 	f.SetContent(`

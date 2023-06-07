@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	_ "embed"
 	"encoding/json"
 	"testing"
@@ -38,7 +39,7 @@ func TestBrowserContextOptionsDefaultValues(t *testing.T) {
 }
 
 func TestBrowserContextOptionsDefaultViewport(t *testing.T) {
-	p := newTestBrowser(t).NewPage(nil)
+	p := newTestBrowser(t).NewPage(context.Background(), nil)
 
 	viewportSize := p.ViewportSize()
 	assert.Equal(t, float64(common.DefaultScreenWidth), viewportSize["width"])

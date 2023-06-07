@@ -158,10 +158,10 @@ func newTestBrowser(tb testing.TB, opts ...any) *testBrowser {
 
 // NewPage is a wrapper around api.Browser.NewPage that fails the test if an
 // error occurs. Added this helper to avoid boilerplate code in tests.
-func (b *testBrowser) NewPage(opts goja.Value) api.Page {
+func (b *testBrowser) NewPage(ctx context.Context, opts goja.Value) api.Page {
 	b.t.Helper()
 
-	p, err := b.Browser.NewPage(opts)
+	p, err := b.Browser.NewPage(ctx, opts)
 	require.NoError(b.t, err)
 
 	return p

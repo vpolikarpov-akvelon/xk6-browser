@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	_ "embed"
 	"testing"
 
@@ -10,7 +11,7 @@ import (
 
 func TestJSHandleGetProperties(t *testing.T) {
 	tb := newTestBrowser(t)
-	p := tb.NewPage(nil)
+	p := tb.NewPage(context.Background(), nil)
 
 	handle, err := p.EvaluateHandle(tb.toGojaValue(`
 	() => {

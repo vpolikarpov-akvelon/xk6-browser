@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	"testing"
 
 	"github.com/dop251/goja"
@@ -25,6 +26,8 @@ type jsFrameWaitForSelectorOpts struct {
 
 func TestLocator(t *testing.T) {
 	t.Parallel()
+
+	ctx := context.Background()
 
 	tests := []struct {
 		name string
@@ -218,7 +221,7 @@ func TestLocator(t *testing.T) {
 			t.Parallel()
 
 			tb := newTestBrowser(t, withFileServer())
-			p := tb.NewPage(nil)
+			p := tb.NewPage(ctx, nil)
 			_, err := p.Goto(tb.staticURL("locators.html"), nil)
 			tt.do(tb, p)
 			require.NoError(t, err)
@@ -301,7 +304,7 @@ func TestLocator(t *testing.T) {
 			t.Parallel()
 
 			tb := newTestBrowser(t)
-			p := tb.NewPage(nil)
+			p := tb.NewPage(ctx, nil)
 			p.SetContent("<html></html>", nil)
 			assert.Panics(t, func() { tt.do(p.Locator("NOTEXIST", nil), tb) })
 		})
@@ -312,7 +315,7 @@ func TestLocator(t *testing.T) {
 		t.Run("strict/"+tt.name, func(t *testing.T) {
 			t.Parallel()
 			tb := newTestBrowser(t, withFileServer())
-			p := tb.NewPage(nil)
+			p := tb.NewPage(ctx, nil)
 
 			_, err := p.Goto(tb.staticURL("locators.html"), nil)
 			require.NoError(t, err)
@@ -326,6 +329,8 @@ func TestLocator(t *testing.T) {
 
 func TestLocatorElementState(t *testing.T) {
 	t.Parallel()
+
+	ctx := context.Background()
 
 	tests := []struct {
 		state, eval string
@@ -364,7 +369,7 @@ func TestLocatorElementState(t *testing.T) {
 			t.Parallel()
 
 			tb := newTestBrowser(t, withFileServer())
-			p := tb.NewPage(nil)
+			p := tb.NewPage(ctx, nil)
 
 			_, err := p.Goto(tb.staticURL("locators.html"), nil)
 			require.NoError(t, err)
@@ -410,7 +415,7 @@ func TestLocatorElementState(t *testing.T) {
 			t.Parallel()
 
 			tb := newTestBrowser(t)
-			p := tb.NewPage(nil)
+			p := tb.NewPage(ctx, nil)
 			p.SetContent("<html></html>", nil)
 			assert.Panics(t, func() { tt.do(p.Locator("NOTEXIST", nil), tb) })
 		})
@@ -422,7 +427,7 @@ func TestLocatorElementState(t *testing.T) {
 			t.Parallel()
 
 			tb := newTestBrowser(t, withFileServer())
-			p := tb.NewPage(nil)
+			p := tb.NewPage(ctx, nil)
 
 			_, err := p.Goto(tb.staticURL("locators.html"), nil)
 			assert.Panics(t, func() {
@@ -436,7 +441,7 @@ func TestLocatorElementState(t *testing.T) {
 func TestLocatorPress(t *testing.T) {
 	tb := newTestBrowser(t)
 
-	p := tb.NewPage(nil)
+	p := tb.NewPage(context.Background(), nil)
 
 	p.SetContent(`<input id="text1">`, nil)
 
