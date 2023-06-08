@@ -786,6 +786,7 @@ func getOrInitBrowser(
 		<-ctx.Done()
 		b.Close()
 		vu.deleteBrowser(id)
+		vu.endTrace(iterID(vu))
 	}(vu.Context())
 
 	return b, nil
