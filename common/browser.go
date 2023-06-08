@@ -514,6 +514,9 @@ func (b *Browser) IsConnected() bool {
 
 // NewContext creates a new incognito-like browser context.
 func (b *Browser) NewContext(ctx context.Context, opts goja.Value) (api.BrowserContext, error) {
+	_, span := otel.Trace(ctx, "Browser.NewContext")
+	defer span.End()
+
 	action := target.CreateBrowserContext().WithDisposeOnDetach(true)
 	browserContextID, err := action.Do(cdp.WithExecutor(b.ctx, b.conn))
 	b.logger.Debugf("Browser:NewContext", "bctxid:%v", browserContextID)
