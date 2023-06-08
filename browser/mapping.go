@@ -787,6 +787,9 @@ func getOrInitBrowser(
 		b.Close()
 		vu.deleteBrowser(id)
 		vu.endTrace(iterID(vu))
+		// TODO: Remove this ForceFlush call once
+		// we can call tp.Shutdown on test end event.
+		vu.tp.ForceFlush(context.Background())
 	}(vu.Context())
 
 	return b, nil
