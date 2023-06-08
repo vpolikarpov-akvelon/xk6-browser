@@ -712,7 +712,7 @@ func TestPageClose(t *testing.T) {
 
 		c, err := b.NewContext(ctx, nil)
 		require.NoError(t, err)
-		p, err := c.NewPage()
+		p, err := c.NewPage(ctx)
 		require.NoError(t, err)
 
 		err = p.Close(nil)

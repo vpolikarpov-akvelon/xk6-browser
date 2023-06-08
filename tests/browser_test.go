@@ -190,14 +190,16 @@ func TestBrowserLogIterationID(t *testing.T) {
 func TestMultiBrowserPanic(t *testing.T) {
 	var b1, b2 *testBrowser
 
+	ctx := context.Background()
+
 	// run it in a test to kick in the Cleanup() in testBrowser.
 	t.Run("browsers", func(t *testing.T) {
 		b1 = newTestBrowser(t)
 		b2 = newTestBrowser(t)
 
-		bctx, err := b1.NewContext(context.Background(), nil)
+		bctx, err := b1.NewContext(ctx, nil)
 		require.NoError(t, err)
-		p1, err := bctx.NewPage()
+		p1, err := bctx.NewPage(ctx)
 		require.NoError(t, err, "failed to create page #1")
 
 		func() {
@@ -242,7 +244,7 @@ func TestMultiConnectToSingleBrowser(t *testing.T) {
 	require.NoError(t, err)
 	bctx1, err := b1.NewContext(ctx, nil)
 	require.NoError(t, err)
-	p1, err := bctx1.NewPage()
+	p1, err := bctx1.NewPage(ctx)
 	require.NoError(t, err, "failed to create page #1")
 
 	b2, err := tb.browserType.Connect(ctx, tb.wsURL)
@@ -254,7 +256,7 @@ func TestMultiConnectToSingleBrowser(t *testing.T) {
 	require.NoError(t, err, "failed to close page #1")
 	bctx1.Close()
 
-	p2, err := bctx2.NewPage()
+	p2, err := bctx2.NewPage(ctx)
 	require.NoError(t, err, "failed to create page #2")
 	err = p2.Close(nil)
 	require.NoError(t, err, "failed to close page #2")

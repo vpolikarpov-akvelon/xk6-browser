@@ -38,7 +38,7 @@ func TestBrowserContextAddCookies(t *testing.T) {
 
 		bc.AddCookies(cookies)
 
-		p, err := bc.NewPage()
+		p, err := bc.NewPage(ctx)
 		require.NoError(t, err)
 
 		_, err = p.Goto(
