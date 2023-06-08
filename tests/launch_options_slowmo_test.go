@@ -225,7 +225,7 @@ func TestBrowserOptionsSlowMo(t *testing.T) {
 			t.Parallel()
 			tb := newTestBrowser(t, withFileServer())
 			testFrameSlowMoImpl(t, tb, func(_ *testBrowser, f api.Frame) {
-				f.Goto("about:blank", nil)
+				f.Goto(ctx, "about:blank", nil)
 			})
 		})
 		t.Run("hover", func(t *testing.T) {

@@ -1,6 +1,10 @@
 package api
 
-import "github.com/dop251/goja"
+import (
+	"context"
+
+	"github.com/dop251/goja"
+)
 
 // Frame is the interface of a CDP target frame.
 type Frame interface {
@@ -18,7 +22,7 @@ type Frame interface {
 	Focus(selector string, opts goja.Value)
 	FrameElement() (ElementHandle, error)
 	GetAttribute(selector string, name string, opts goja.Value) goja.Value
-	Goto(url string, opts goja.Value) (Response, error)
+	Goto(ctx context.Context, url string, opts goja.Value) (Response, error)
 	Hover(selector string, opts goja.Value)
 	InnerHTML(selector string, opts goja.Value) string
 	InnerText(selector string, opts goja.Value) string
