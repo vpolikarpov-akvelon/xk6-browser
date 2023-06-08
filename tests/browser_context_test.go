@@ -42,6 +42,7 @@ func TestBrowserContextAddCookies(t *testing.T) {
 		require.NoError(t, err)
 
 		_, err = p.Goto(
+			ctx,
 			tb.staticURL("add_cookies.html"),
 			tb.toGojaValue(struct {
 				WaitUntil string `js:"waitUntil"`

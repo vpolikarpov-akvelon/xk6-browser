@@ -83,7 +83,7 @@ func TestBrowserContextOptionsExtraHTTPHeaders(t *testing.T) {
 	require.NoError(t, err)
 
 	err = tb.awaitWithTimeout(time.Second*5, func() error {
-		resp, err := p.Goto(tb.URL("/get"), nil)
+		resp, err := p.Goto(ctx, tb.URL("/get"), nil)
 		if err != nil {
 			return err
 		}

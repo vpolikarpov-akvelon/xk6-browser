@@ -482,7 +482,7 @@ func mapPage(vu moduleVU, p api.Page) mapping {
 		"goForward": p.GoForward,
 		"goto": func(url string, opts goja.Value) *goja.Promise {
 			return k6ext.Promise(vu.Context(), func() (any, error) {
-				resp, err := p.Goto(url, opts)
+				resp, err := p.Goto(context.Background(), url, opts)
 				if err != nil {
 					return nil, err //nolint:wrapcheck
 				}

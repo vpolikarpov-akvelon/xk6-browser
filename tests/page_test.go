@@ -131,36 +131,39 @@ func TestPageEvaluate(t *testing.T) {
 }
 
 func TestPageGoto(t *testing.T) {
+	ctx := context.Background()
 	b := newTestBrowser(t, withFileServer())
-	p := b.NewPage(context.Background(), nil)
+	p := b.NewPage(ctx, nil)
 
 	url := b.staticURL("empty.html")
-	r, err := p.Goto(url, nil)
+	r, err := p.Goto(ctx, url, nil)
 	require.NoError(t, err)
 	require.NotNil(t, r)
 	assert.Equal(t, url, r.URL(), `expected URL to be %q, result of navigation was %q`, url, r.URL())
 }
 
 func TestPageGotoDataURI(t *testing.T) {
+	ctx := context.Background()
 	b := newTestBrowser(t)
-	p := b.NewPage(context.Background(), nil)
+	p := b.NewPage(ctx, nil)
 
-	r, err := p.Goto("data:text/html,hello", nil)
+	r, err := p.Goto(ctx, "data:text/html,hello", nil)
 	require.NoError(t, err)
 	assert.Nil(t, r, `expected response to be nil`)
 	require.NoError(t, err)
 }
 
 func TestPageGotoWaitUntilLoad(t *testing.T) {
+	ctx := context.Background()
 	b := newTestBrowser(t, withFileServer())
-	p := b.NewPage(context.Background(), nil)
+	p := b.NewPage(ctx, nil)
 
 	opts := b.toGojaValue(struct {
 		WaitUntil string `js:"waitUntil"`
 	}{
 		WaitUntil: "load",
 	})
-	_, err := p.Goto(b.staticURL("wait_until.html"), opts)
+	_, err := p.Goto(ctx, b.staticURL("wait_until.html"), opts)
 	require.NoError(t, err)
 	var (
 		results = p.Evaluate(b.toGojaValue("() => window.results"))
@@ -175,15 +178,16 @@ func TestPageGotoWaitUntilLoad(t *testing.T) {
 }
 
 func TestPageGotoWaitUntilDOMContentLoaded(t *testing.T) {
+	ctx := context.Background()
 	b := newTestBrowser(t, withFileServer())
-	p := b.NewPage(context.Background(), nil)
+	p := b.NewPage(ctx, nil)
 
 	opts := b.toGojaValue(struct {
 		WaitUntil string `js:"waitUntil"`
 	}{
 		WaitUntil: "domcontentloaded",
 	})
-	_, err := p.Goto(b.staticURL("wait_until.html"), opts)
+	_, err := p.Goto(ctx, b.staticURL("wait_until.html"), opts)
 	require.NoError(t, err)
 	var (
 		results = p.Evaluate(b.toGojaValue("() => window.results"))
@@ -434,16 +438,17 @@ func TestPageTitle(t *testing.T) {
 }
 
 func TestPageSetExtraHTTPHeaders(t *testing.T) {
+	ctx := context.Background()
 	b := newTestBrowser(t, withHTTPServer())
 
-	p := b.NewPage(context.Background(), nil)
+	p := b.NewPage(ctx, nil)
 
 	headers := map[string]string{
 		"Some-Header": "Some-Value",
 	}
 	p.SetExtraHTTPHeaders(headers)
 
-	resp, err := p.Goto(b.URL("/get"), nil)
+	resp, err := p.Goto(ctx, b.URL("/get"), nil)
 	require.NoError(t, err)
 	require.NotNil(t, resp)
 
@@ -678,12 +683,13 @@ func TestPagePress(t *testing.T) {
 }
 
 func TestPageURL(t *testing.T) {
+	ctx := context.Background()
 	b := newTestBrowser(t, withHTTPServer())
 
-	p := b.NewPage(context.Background(), nil)
+	p := b.NewPage(ctx, nil)
 	assert.Equal(t, "about:blank", p.URL())
 
-	resp, err := p.Goto(b.URL("/get"), nil)
+	resp, err := p.Goto(ctx, b.URL("/get"), nil)
 	require.NoError(t, err)
 	require.NotNil(t, resp)
 	assert.Regexp(t, "http://.*/get", p.URL())

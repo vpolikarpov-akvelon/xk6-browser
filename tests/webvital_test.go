@@ -16,9 +16,10 @@ import (
 // a web page.
 func TestWebVitalMetric(t *testing.T) {
 	var (
+		ctx      = context.Background()
 		samples  = make(chan k6metrics.SampleContainer)
 		browser  = newTestBrowser(t, withFileServer(), withSamplesListener(samples))
-		page     = browser.NewPage(context.Background(), nil)
+		page     = browser.NewPage(ctx, nil)
 		expected = map[string]bool{
 			"browser_web_vital_ttfb": false,
 			"browser_web_vital_fcp":  false,
@@ -29,7 +30,7 @@ func TestWebVitalMetric(t *testing.T) {
 	)
 
 	count := 0
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	ctx, cancel := context.WithTimeout(ctx, time.Second*3)
 	go func() {
 		for {
 			metric := <-samples
@@ -47,7 +48,7 @@ func TestWebVitalMetric(t *testing.T) {
 		}
 	}()
 
-	resp, err := page.Goto(browser.staticURL("/web_vitals.html"), nil)
+	resp, err := page.Goto(ctx, browser.staticURL("/web_vitals.html"), nil)
 	require.NoError(t, err)
 	require.NotNil(t, resp)
 

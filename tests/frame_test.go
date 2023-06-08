@@ -30,6 +30,8 @@ func TestFramePress(t *testing.T) {
 func TestFrameDismissDialogBox(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
+
 	for _, tt := range []string{
 		"alert",
 		"confirm",
@@ -42,7 +44,7 @@ func TestFrameDismissDialogBox(t *testing.T) {
 
 			var (
 				tb = newTestBrowser(t, withFileServer())
-				p  = tb.NewPage(context.Background(), nil)
+				p  = tb.NewPage(ctx, nil)
 			)
 
 			opts := tb.toGojaValue(struct {
@@ -51,6 +53,7 @@ func TestFrameDismissDialogBox(t *testing.T) {
 				WaitUntil: "networkidle",
 			})
 			_, err := p.Goto(
+				ctx,
 				tb.staticURL("dialog.html?dialogType="+tt),
 				opts,
 			)
@@ -70,6 +73,8 @@ func TestFrameDismissDialogBox(t *testing.T) {
 func TestFrameNoPanicWithEmbeddedIFrame(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
+
 	if s, ok := env.Lookup(env.BrowserHeadless); ok {
 		if v, err := strconv.ParseBool(s); err == nil && v {
 			// We're skipping this when running in headless
@@ -84,8 +89,9 @@ func TestFrameNoPanicWithEmbeddedIFrame(t *testing.T) {
 	// run the browser in headfull mode.
 	tb := newTestBrowser(t, withFileServer(), env.ConstLookup(env.BrowserHeadless, "0"))
 
-	p := tb.NewPage(context.Background(), nil)
+	p := tb.NewPage(ctx, nil)
 	_, err := p.Goto(
+		ctx,
 		tb.staticURL("embedded_iframe.html"),
 		tb.toGojaValue(struct {
 			WaitUntil string `js:"waitUntil"`
