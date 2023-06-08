@@ -10,6 +10,10 @@ import (
 	"github.com/grafana/xk6-browser/api"
 	"github.com/grafana/xk6-browser/k6ext"
 	"github.com/grafana/xk6-browser/log"
+	"github.com/grafana/xk6-browser/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 
 	k6modules "go.k6.io/k6/js/modules"
 
@@ -861,6 +865,9 @@ func (f *Frame) getAttribute(selector, name string, opts *FrameBaseOptions) (goj
 
 // Goto will navigate the frame to the specified URL and return a HTTP response object.
 func (f *Frame) Goto(ctx context.Context, url string, opts goja.Value) (api.Response, error) {
+	_, span := otel.Trace(ctx, "Frame.Goto", trace.WithAttributes(attribute.String("url", url)))
+	defer span.End()
+
 	var (
 		netMgr         = f.manager.page.mainFrameSession.getNetworkManager()
 		defaultReferer = netMgr.extraHTTPHeaders["referer"]
@@ -874,8 +881,10 @@ func (f *Frame) Goto(ctx context.Context, url string, opts goja.Value) (api.Resp
 	}
 	resp, err := f.manager.NavigateFrame(f, url, parsedOpts)
 	if err != nil {
+		span.SetStatus(codes.Error, err.Error())
 		return nil, fmt.Errorf("navigating frame to %q: %w", url, err)
 	}
+	span.SetAttributes(attribute.Int64("status", resp.Status()))
 	applySlowMo(f.ctx)
 
 	// Since response will be in an interface, it will never be nil,
