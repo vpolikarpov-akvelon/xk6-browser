@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -12,6 +13,8 @@ import (
 func TestBrowserContextAddCookies(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
+
 	t.Run("happy_path", func(t *testing.T) {
 		t.Parallel()
 
@@ -20,7 +23,7 @@ func TestBrowserContextAddCookies(t *testing.T) {
 		testCookieName := "test_cookie_name"
 		testCookieValue := "test_cookie_value"
 
-		bc, err := tb.NewContext(nil)
+		bc, err := tb.NewContext(ctx, nil)
 		require.NoError(t, err)
 		cookies, err := tb.runJavaScript(`
 			[
@@ -179,7 +182,7 @@ func TestBrowserContextAddCookies(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			bc, err := tb.NewContext(nil)
+			bc, err := tb.NewContext(ctx, nil)
 			require.NoError(t, err)
 
 			if tt.shouldPanic {

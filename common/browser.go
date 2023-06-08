@@ -513,7 +513,7 @@ func (b *Browser) IsConnected() bool {
 }
 
 // NewContext creates a new incognito-like browser context.
-func (b *Browser) NewContext(opts goja.Value) (api.BrowserContext, error) {
+func (b *Browser) NewContext(ctx context.Context, opts goja.Value) (api.BrowserContext, error) {
 	action := target.CreateBrowserContext().WithDisposeOnDetach(true)
 	browserContextID, err := action.Do(cdp.WithExecutor(b.ctx, b.conn))
 	b.logger.Debugf("Browser:NewContext", "bctxid:%v", browserContextID)
@@ -539,10 +539,10 @@ func (b *Browser) NewContext(opts goja.Value) (api.BrowserContext, error) {
 
 // NewPage creates a new tab in the browser window.
 func (b *Browser) NewPage(ctx context.Context, opts goja.Value) (api.Page, error) {
-	_, span := otel.Trace(ctx, "Browser.NewPage")
+	ctx, span := otel.Trace(ctx, "Browser.NewPage")
 	defer span.End()
 
-	browserCtx, err := b.NewContext(opts)
+	browserCtx, err := b.NewContext(ctx, opts)
 	if err != nil {
 		return nil, fmt.Errorf("new page: %w", err)
 	}

@@ -195,7 +195,7 @@ func TestMultiBrowserPanic(t *testing.T) {
 		b1 = newTestBrowser(t)
 		b2 = newTestBrowser(t)
 
-		bctx, err := b1.NewContext(nil)
+		bctx, err := b1.NewContext(context.Background(), nil)
 		require.NoError(t, err)
 		p1, err := bctx.NewPage()
 		require.NoError(t, err, "failed to create page #1")
@@ -240,14 +240,14 @@ func TestMultiConnectToSingleBrowser(t *testing.T) {
 
 	b1, err := tb.browserType.Connect(ctx, tb.wsURL)
 	require.NoError(t, err)
-	bctx1, err := b1.NewContext(nil)
+	bctx1, err := b1.NewContext(ctx, nil)
 	require.NoError(t, err)
 	p1, err := bctx1.NewPage()
 	require.NoError(t, err, "failed to create page #1")
 
 	b2, err := tb.browserType.Connect(ctx, tb.wsURL)
 	require.NoError(t, err)
-	bctx2, err := b2.NewContext(nil)
+	bctx2, err := b2.NewContext(ctx, nil)
 	require.NoError(t, err)
 
 	err = p1.Close(nil)

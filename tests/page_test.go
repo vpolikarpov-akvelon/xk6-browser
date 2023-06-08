@@ -692,12 +692,14 @@ func TestPageURL(t *testing.T) {
 func TestPageClose(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
+
 	t.Run("page_from_browser", func(t *testing.T) {
 		t.Parallel()
 
 		b := newTestBrowser(t, withHTTPServer())
 
-		p := b.NewPage(context.Background(), nil)
+		p := b.NewPage(ctx, nil)
 
 		err := p.Close(nil)
 		assert.NoError(t, err)
@@ -708,7 +710,7 @@ func TestPageClose(t *testing.T) {
 
 		b := newTestBrowser(t, withHTTPServer())
 
-		c, err := b.NewContext(nil)
+		c, err := b.NewContext(ctx, nil)
 		require.NoError(t, err)
 		p, err := c.NewPage()
 		require.NoError(t, err)
