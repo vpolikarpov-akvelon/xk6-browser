@@ -205,6 +205,11 @@ func newBrowserRegistry(vu k6modules.VU, remote *remoteRegistry, pids *pidRegist
 	)
 	go r.handleIterEvents(eventsCh)
 
+	_, exitCh := vu.Events().Global.Subscribe(
+		k6event.Exit,
+	)
+	go r.handleExitEvent(exitCh)
+
 	return r
 }
 
@@ -236,6 +241,12 @@ func (r *browserRegistry) handleIterEvents(eventsCh <-chan *k6event.Event) {
 	}
 }
 
+func (r *browserRegistry) handleExitEvent(exitCh <-chan *k6event.Event) {
+	e := <-exitCh
+	defer e.Done()
+	r.clear()
+}
+
 func (r *browserRegistry) setBrowser(id int64, b api.Browser) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -257,6 +268,16 @@ func (r *browserRegistry) deleteBrowser(id int64) {
 	defer r.mu.Unlock()
 
 	if b, ok := r.m[id]; ok {
+		b.Close()
+		delete(r.m, id)
+	}
+}
+
+func (r *browserRegistry) clear() {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	for id, b := range r.m {
 		b.Close()
 		delete(r.m, id)
 	}
