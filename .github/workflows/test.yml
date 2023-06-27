@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - vp-test
+  workflow_dispatch:
 
 defaults:
   run:
