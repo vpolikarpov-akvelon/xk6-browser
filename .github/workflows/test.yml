@@ -2,11 +2,7 @@ name: Test
 on:
   push:
     branches:
-      - main
-  pull_request:
-  schedule:
-    # At 06:00 AM UTC from Monday through Friday
-    - cron:  '0 6 * * 1-5'
+      - vp-test
 
 defaults:
   run:
